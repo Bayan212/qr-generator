@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>فاتورة QR - ZATCA</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+<body>
+    <div>
+        <label>اسم البائع:</label>
+        <input type="text" id="sellerName" value="المنزل الذكي"><br>
+        <label>الرقم الضريبي:</label>
+        <input type="text" id="vatNumber" value="302018703500003"><br>
+        <label>تاريخ الفاتورة:</label>
+        <input type="text" id="invoiceDate" placeholder="مثال: 2025-05-01T12:30:00"><br>
+        <label>الإجمالي:</label>
+        <input type="text" id="invoiceTotal"><br>
+        <label>الضريبة:</label>
+        <input type="text" id="vatAmount"><br><br>
+        <button onclick="generateQR()">توليد QR</button>
+        <br><br>
+        <canvas id="qrCanvas"></canvas>
+    </div>
+
+    <script>
+        function toTLV(tag, value) {
+            const encoder = new TextEncoder();
+            const valueBytes = encoder.encode(value);
+            const length = valueBytes.length;
+            return [tag, length, ...valueBytes];
+        }
+
+        function encodeTLV(data) {
+            let tlvBytes = [];
+            data.forEach(([tag, value]) => {
+                tlvBytes.push(...toTLV(tag, value));
+            });
+            return btoa(String.fromCharCode(...tlvBytes));
+        }
+
+        function generateQR() {
+            const sellerName = document.getElementById("sellerName").value;
+            const vatNumber = document.getElementById("vatNumber").value;
+            const invoiceDate = document.getElementById("invoiceDate").value;
+            const invoiceTotal = document.getElementById("invoiceTotal").value;
+            const vatAmount = document.getElementById("vatAmount").value;
+
+            const tlvData = [
+                [1, sellerName],
+                [2, vatNumber],
+                [3, invoiceDate],
+                [4, invoiceTotal],
+                [5, vatAmount]
+            ];
+
+            const encoded = encodeTLV(tlvData);
+
+            QRCode.toCanvas(document.getElementById('qrCanvas'), encoded, function (error) {
+                if (error) console.error(error);
+            });
+        }
+    </script>
+</body>
+</html>
